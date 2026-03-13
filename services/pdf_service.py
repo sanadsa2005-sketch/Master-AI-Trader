@@ -93,11 +93,11 @@ def generate_pdf(ticker, interval, final_json, reports):
     if setup:
         pdf.chapter_title("Trade Idea")
         pdf.set_font('Helvetica', 'B', 10)
-        pdf.cell(40, 8, clean_text(f"Direction: {setup.get('Direction')}"), 0, 1)
-        pdf.cell(40, 8, clean_text(f"Entry: {setup.get('EntryZone')}"), 0, 1)
-        pdf.cell(40, 8, clean_text(f"Stop Loss: {setup.get('StopLoss')}"), 0, 1)
-        pdf.cell(40, 8, clean_text(f"Take Profit: {setup.get('TakeProfit')}"), 0, 1)
-        pdf.cell(40, 8, clean_text(f"R/R Ratio: {setup.get('RiskRewardRatio')}"), 0, 1)
+        pdf.multi_cell(0, 6, clean_text(f"Direction: {setup.get('Direction')}"), new_x="LMARGIN", new_y="NEXT")
+        pdf.multi_cell(0, 6, clean_text(f"Entry: {setup.get('EntryZone')}"), new_x="LMARGIN", new_y="NEXT")
+        pdf.multi_cell(0, 6, clean_text(f"Stop Loss: {setup.get('StopLoss')}"), new_x="LMARGIN", new_y="NEXT")
+        pdf.multi_cell(0, 6, clean_text(f"Take Profit: {setup.get('TakeProfit')}"), new_x="LMARGIN", new_y="NEXT")
+        pdf.multi_cell(0, 6, clean_text(f"R/R Ratio: {setup.get('RiskRewardRatio')}"), new_x="LMARGIN", new_y="NEXT")
         pdf.ln(5)
 
     # Confluence
@@ -107,16 +107,14 @@ def generate_pdf(ticker, interval, final_json, reports):
         pdf.cell(0, 8, "Bullish:", 0, 1)
         pdf.set_font('Helvetica', '', 10)
         for item in final_json.get("BullishConfluence"):
-            pdf.cell(5)
-            pdf.cell(0, 6, clean_text(f"- {item}"), 0, 1)
+            pdf.multi_cell(0, 6, clean_text(f"   - {item}"), new_x="LMARGIN", new_y="NEXT")
     
     if final_json.get("BearishConfluence"):
         pdf.set_font('Helvetica', 'B', 10)
         pdf.cell(0, 8, "Bearish:", 0, 1)
         pdf.set_font('Helvetica', '', 10)
         for item in final_json.get("BearishConfluence"):
-            pdf.cell(5)
-            pdf.cell(0, 6, clean_text(f"- {item}"), 0, 1)
+            pdf.multi_cell(0, 6, clean_text(f"   - {item}"), new_x="LMARGIN", new_y="NEXT")
     pdf.ln()
 
     # Detailed Reports

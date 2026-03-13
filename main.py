@@ -126,34 +126,51 @@ def main():
             with st.spinner("Master Analyst is compiling the final verdict..."):
                  final_json = synthesize_reports(ticker, interval, reports)
                  
-            # --- Display Results ---
+            # --- Save Results to Session State ---
             status_container.empty() # Clear status
             
-            with results_container:
-                if final_json.get("error"):
-                    st.error("Failed to generate report JSON.")
-                    st.text(final_json.get("raw_output"))
-                else:
-                    display_final_report(final_json, reports)
-                    
-                    # --- PDF Download ---
-                    with st.spinner("Generating PDF Report..."):
-                         try:
-                             pdf_bytes = generate_pdf(ticker, interval, final_json, reports)
-                             
-                             filename = f"Master_AI_Trader_{ticker}_{interval}_{final_json.get('Date')}.pdf"
-                             st.download_button(
-                                 label="📥 Download PDF Report",
-                                 data=pdf_bytes,
-                                 file_name=filename,
-                                 mime="application/pdf"
-                             )
-                         except Exception as e:
-                             st.error(f"Failed to generate PDF: {e}")
+            # Generate PDF bytes once
+            pdf_bytes = None
+            if not final_json.get("error"):
+                try:
+                    pdf_bytes = generate_pdf(ticker, interval, final_json, reports)
+                except Exception as e:
+                    st.error(f"Failed to generate PDF internally: {e}")
 
+            st.session_state.report_data = {
+                "final_json": final_json,
+                "reports": reports,
+                "pdf_bytes": pdf_bytes,
+                "ticker": ticker,
+                "interval": interval
+            }
+            
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
             st.exception(e)
+
+    # --- Display Results (Persistent) ---
+    if "report_data" in st.session_state:
+        data = st.session_state.report_data
+        
+        # Use existing results_container if we just generated it, otherwise create a new container
+        container = results_container if 'results_container' in locals() else st.container()
+        
+        with container:
+            if data["final_json"].get("error"):
+                st.error("Failed to generate report JSON.")
+                st.text(data["final_json"].get("raw_output"))
+            else:
+                display_final_report(data["final_json"], data["reports"])
+                
+                if data["pdf_bytes"]:
+                    filename = f"Master_AI_Trader_{data['ticker']}_{data['interval']}_{data['final_json'].get('Date')}.pdf"
+                    st.download_button(
+                        label="📥 Download PDF Report",
+                        data=data["pdf_bytes"],
+                        file_name=filename,
+                        mime="application/pdf"
+                    )
 
 def display_final_report(final_data: dict, raw_reports: list):
     """
